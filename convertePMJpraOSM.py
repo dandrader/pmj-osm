@@ -70,11 +70,14 @@ class PMJConverter:
 
     def processEndereco(self, tag):
         tag.attrib['k'] = 'addr:street'
+
         endereco = stripAccents(tag.attrib['v'])
+        endereco = endereco.replace('RUA SERVIDAO','SERVIDAO')
+
         if endereco in self.street.keys():
             tag.attrib['v'] = self.street[endereco]
         else:
-            print("Não achou rua: " + tag.attrib['v'])
+            print("Não achou rua: " + tag.attrib['v'] + ' (' + endereco + ')')
             self.mismatchCount += 1
 
     def processNumero(self, tag):
