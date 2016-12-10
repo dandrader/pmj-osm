@@ -6,9 +6,14 @@ import sys, getopt
 
 import xml.etree.ElementTree as etree
 
+def stripAccents(s):
+   return ''.join(c for c in unicodedata.normalize('NFD', s)
+                  if unicodedata.category(c) != 'Mn')
+
 class PMJConverter:
     suburb = ''
     street = ''
+    mismatchCount = 0
 
     def main(self, argv):
         inputfile = ''
@@ -37,7 +42,10 @@ class PMJConverter:
             if elem.tag == 'way':
                 self.processWay(elem)
 
-        tree.write(outputfile,encoding="UTF-8",xml_declaration=True)
+        print('Mismatch count: ' + str(self.mismatchCount))
+
+        if self.mismatchCount == 0:
+            tree.write(outputfile,encoding="UTF-8",xml_declaration=True)
 
 
     def processWay(self, way):
@@ -62,10 +70,12 @@ class PMJConverter:
 
     def processEndereco(self, tag):
         tag.attrib['k'] = 'addr:street'
-        if tag.attrib['v'] in self.street.keys():
-            tag.attrib['v'] = self.street[tag.attrib['v']]
+        endereco = stripAccents(tag.attrib['v'])
+        if endereco in self.street.keys():
+            tag.attrib['v'] = self.street[endereco]
         else:
-            print("Nao achou rua: " + tag.attrib['v'])
+            print("Não achou rua: " + tag.attrib['v'])
+            self.mismatchCount += 1
 
     def processNumero(self, tag):
         tag.attrib['k'] = 'addr:housenumber'
