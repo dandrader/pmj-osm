@@ -4,9 +4,8 @@ import numpy
 import unicodedata
 import sys, getopt
 
-def strip_accents(s):
-   return ''.join(c for c in unicodedata.normalize('NFD', s)
-                  if unicodedata.category(c) != 'Mn')
+# local
+from pmj_osm_utils import *
 
 def main(argv):
     inputfile = ''
@@ -36,10 +35,11 @@ def main(argv):
 
     for line in nomesRuas:
         line = line.rstrip()
-        primitiveName = strip_accents(line.upper())
-        osmStreetName[primitiveName] = line
+        primitiveName = stripAccents(line.upper())
         primitiveName = primitiveName.replace('’','')
         primitiveName = primitiveName.replace('-',' ')
+        primitiveName = removeIrrelevantWords(primitiveName)
+
         osmStreetName[primitiveName] = line
 
     for key, value in osmStreetName.items():

@@ -2,13 +2,13 @@
 
 import numpy
 import unicodedata
+import re
 import sys, getopt
 
-import xml.etree.ElementTree as etree
+# local
+from pmj_osm_utils import *
 
-def stripAccents(s):
-   return ''.join(c for c in unicodedata.normalize('NFD', s)
-                  if unicodedata.category(c) != 'Mn')
+import xml.etree.ElementTree as etree
 
 class PMJConverter:
     suburb = ''
@@ -72,7 +72,7 @@ class PMJConverter:
         tag.attrib['k'] = 'addr:street'
 
         endereco = stripAccents(tag.attrib['v'])
-        endereco = endereco.replace('RUA SERVIDAO','SERVIDAO')
+        endereco = removeIrrelevantWords(endereco)
 
         if endereco in self.street.keys():
             tag.attrib['v'] = self.street[endereco]
