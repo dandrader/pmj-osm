@@ -38,6 +38,9 @@ def main(argv):
         line = line.rstrip()
         primitiveName = strip_accents(line.upper())
         osmStreetName[primitiveName] = line
+        primitiveName = primitiveName.replace('’','')
+        primitiveName = primitiveName.replace('-',' ')
+        osmStreetName[primitiveName] = line
 
     for key, value in osmStreetName.items():
         print(key + " -> " + value)
