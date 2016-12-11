@@ -1,0 +1,7 @@
+osmfilter --drop-nodes --drop-author --drop-version --keep="highway=residential =primary =secondary =tertiary =unclassified" --keep-way-tags="all name=" Joinville.osm > JoinvilleRuas.osm
+cat JoinvilleRuas.osm | grep "<tag" > JoinvilleTagsRuas
+rm JoinvilleRuas.osm
+sed "s/		<tag k=\"name\" v=\"//" JoinvilleTagsRuas > foo
+rm JoinvilleTagsRuas
+sed "s/\"\/>//" foo > JoinvilleNomeRuas
+rm foo
