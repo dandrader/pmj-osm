@@ -3,5 +3,5 @@ cat JoinvilleRuas.osm | grep "<tag" > JoinvilleTagsRuas
 rm JoinvilleRuas.osm
 sed "s/		<tag k=\"name\" v=\"//" JoinvilleTagsRuas > foo
 rm JoinvilleTagsRuas
-sed "s/\"\/>//" foo > JoinvilleNomeRuas
+sed "s/\"\/>//" foo > JoinvilleNomesRuas
 rm foo
