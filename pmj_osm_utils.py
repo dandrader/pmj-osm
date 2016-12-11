@@ -7,16 +7,8 @@ def stripAccents(s):
                   if unicodedata.category(c) != 'Mn')
 
 def removeIrrelevantWords(address):
-    #address = address.replace('SERVIDAO','')
-    #address = address.replace('RUA','')
-    #address = address.replace('AVENIDA','')
-    #address = address.replace('TRAVESSA','')
-    #address = address.replace(' DA ',' ')
-    #address = address.replace(' DO ',' ')
-    #address = address.replace(' DAS ',' ')
-    #address = address.replace(' DOS ',' ')
-    #address = address.replace(' DE ',' ')
     address = address.strip()
+    address = address.replace(' QUINZE ',' XV ')
     return address
 
 def simplifyAddress(address):

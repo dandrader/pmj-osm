@@ -5,6 +5,8 @@ import unicodedata
 import re
 import sys, getopt
 
+import fuzzywuzzy.process as fuzzy
+
 # local
 from pmj_osm_utils import *
 
@@ -71,32 +73,15 @@ class PMJConverter:
     def processEndereco(self, tag):
         tag.attrib['k'] = 'addr:street'
 
-        endereco = stripAccents(tag.attrib['v'])
-        endereco = removeIrrelevantWords(endereco)
+        endereco = simplifyAddress(tag.attrib['v'])
 
-        words = endereco.split()
-        candidateKeys = self.street.keys()
+        chosenKeyAndScore = fuzzy.extractOne(endereco, self.street.keys())
+        osmStreet = self.street[chosenKeyAndScore[0]]
 
-        for word in words:
-            # ignora abreviacao por enquanto
-            if '.' in word:
-                continue
+        if (chosenKeyAndScore[1] < 100):
+            print(endereco + ' -> ' + osmStreet + ' (' + str(chosenKeyAndScore[1]) + ')')
 
-            newCandidateKeys = []
-            for key in candidateKeys:
-                if word in key.split():
-                    newCandidateKeys.append(key)
-            candidateKeys = newCandidateKeys
-
-        if len(candidateKeys) == 1:
-            tag.attrib['v'] = self.street[candidateKeys[0]]
-        else:
-            # tenta comparacao exata
-            if len(candidateKeys) > 1 and endereco in candidateKeys:
-                tag.attrib['v'] = self.street[endereco]
-            else:
-                print("Não achou rua: " + tag.attrib['v'] + '. candidateKeys = ' + str(candidateKeys) + ', words = ' + str(words))
-                self.mismatchCount += 1
+        tag.attrib['v'] = osmStreet
 
 
     def processNumero(self, tag):
