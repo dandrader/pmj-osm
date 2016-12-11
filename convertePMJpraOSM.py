@@ -74,11 +74,30 @@ class PMJConverter:
         endereco = stripAccents(tag.attrib['v'])
         endereco = removeIrrelevantWords(endereco)
 
-        if endereco in self.street.keys():
-            tag.attrib['v'] = self.street[endereco]
+        words = endereco.split()
+        candidateKeys = self.street.keys()
+
+        for word in words:
+            # ignora abreviacao por enquanto
+            if '.' in word:
+                continue
+
+            newCandidateKeys = []
+            for key in candidateKeys:
+                if word in key.split():
+                    newCandidateKeys.append(key)
+            candidateKeys = newCandidateKeys
+
+        if len(candidateKeys) == 1:
+            tag.attrib['v'] = self.street[candidateKeys[0]]
         else:
-            print("Não achou rua: " + tag.attrib['v'] + ' (' + endereco + ')')
-            self.mismatchCount += 1
+            # tenta comparacao exata
+            if len(candidateKeys) > 1 and endereco in candidateKeys:
+                tag.attrib['v'] = self.street[endereco]
+            else:
+                print("Não achou rua: " + tag.attrib['v'] + '. candidateKeys = ' + str(candidateKeys) + ', words = ' + str(words))
+                self.mismatchCount += 1
+
 
     def processNumero(self, tag):
         tag.attrib['k'] = 'addr:housenumber'
