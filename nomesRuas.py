@@ -35,12 +35,32 @@ def main(argv):
 
     for line in nomesRuas:
         line = line.rstrip()
-        primitiveName = stripAccents(line.upper())
-        primitiveName = primitiveName.replace('’','')
-        primitiveName = primitiveName.replace('-',' ')
-        primitiveName = removeIrrelevantWords(primitiveName)
+
+        if line in osmStreetName.values():
+            continue
+
+        primitiveName = simplifyAddress(line)
+
+        if primitiveName in osmStreetName.keys():
+            print(primitiveName + ' ja existe! ' + line)
+            exit()
 
         osmStreetName[primitiveName] = line
+        print(primitiveName + ' ' + line)
+
+        oldName = primitiveName
+
+        primitiveName = primitiveName.replace('’','')
+        primitiveName = primitiveName.replace('-',' ')
+
+        if oldName != primitiveName and primitiveName in osmStreetName.keys():
+            print(primitiveName + ' ja existe! ' + line)
+            exit()
+
+        if oldName != primitiveName:
+            osmStreetName[primitiveName] = line
+            print(primitiveName)
+            print(primitiveName + ' ' + line)
 
     for key, value in osmStreetName.items():
         print(key + " -> " + value)
