@@ -8,7 +8,14 @@ def stripAccents(s):
 
 def removeIrrelevantWords(address):
     address = address.strip()
+
+    # casos dificeis
     address = address.replace(' QUINZE ',' XV ')
+    address = address.replace('RUA SERVIDAO','SERVIDAO')
+    address = address.replace('RUA ALAMEDA','ALAMEDA')
+    address = address.replace('RUA AVENIDA','AVENIDA')
+    address = address.replace('RUA MARQUES DE OLINDA', 'AVENIDA MARQUES DE OLINDA')
+
     return address
 
 def simplifyAddress(address):
