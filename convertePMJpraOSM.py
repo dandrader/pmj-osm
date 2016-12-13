@@ -51,17 +51,27 @@ class PMJConverter:
 
 
     def processWay(self, way):
+        elemsToRemove = []
         for elem in way:
             if elem.tag == 'tag':
-                self.processWayTag(elem)
+                if not self.processWayTag(elem):
+                    elemsToRemove.append(elem)
+
+        for elem in elemsToRemove:
+            way.remove(elem)
 
     def processWayTag(self, tag):
         if tag.attrib['k'] == 'bairro':
             self.processBairro(tag)
+            return True
         elif tag.attrib['k'] == 'endereco':
             self.processEndereco(tag)
+            return True
         elif tag.attrib['k'] == 'numero':
             self.processNumero(tag)
+            return True
+        else:
+            return False
 
     def processBairro(self, tag):
         tag.attrib['k'] = 'addr:suburb'
