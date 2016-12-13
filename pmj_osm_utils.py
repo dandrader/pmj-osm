@@ -11,6 +11,8 @@ def removeIrrelevantWords(address):
 
     # casos dificeis
     address = address.replace(' QUINZE ',' XV ')
+    address = address.replace(' DR ',' DOUTOR ')
+    address = address.replace(' DRA ',' DOUTORA ')
     address = address.replace('RUA SERVIDAO','SERVIDAO')
     address = address.replace('RUA ALAMEDA','ALAMEDA')
     address = address.replace('RUA AVENIDA','AVENIDA')
