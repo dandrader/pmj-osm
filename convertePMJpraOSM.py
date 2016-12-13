@@ -76,12 +76,32 @@ class PMJConverter:
         endereco = simplifyAddress(tag.attrib['v'])
 
         chosenKeyAndScore = fuzzy.extractOne(endereco, self.street.keys())
+
+        if (chosenKeyAndScore[1] < 90):
+            chosenKeyAndScore = self.tryOtherAddressPrefixes(endereco, chosenKeyAndScore)
+
         osmStreet = self.street[chosenKeyAndScore[0]]
 
         if (chosenKeyAndScore[1] < 100):
             print(endereco + ' -> ' + osmStreet + ' (' + str(chosenKeyAndScore[1]) + ')')
 
         tag.attrib['v'] = osmStreet
+
+    # Tenta com outros prefixos (eg: na PMJ pode estar "RUA FOO" e no OSM "SERVIDAO FOO")
+    def tryOtherAddressPrefixes(self, endereco, chosenKeyAndScore):
+            chosenKeyAndScore = self.tryOtherAddressPrefixes_helper(endereco, chosenKeyAndScore, "RUA")
+            chosenKeyAndScore = self.tryOtherAddressPrefixes_helper(endereco, chosenKeyAndScore, "AVENIDA")
+            chosenKeyAndScore = self.tryOtherAddressPrefixes_helper(endereco, chosenKeyAndScore, "SERVIDAO")
+            chosenKeyAndScore = self.tryOtherAddressPrefixes_helper(endereco, chosenKeyAndScore, "ALAMEDA")
+            return chosenKeyAndScore
+
+    def tryOtherAddressPrefixes_helper(self, endereco, chosenKeyAndScore, prefix):
+        enderecoAlt = re.sub(r"^(RUA|AVENIDA|SERVIDAO|ALAMEDA) ", prefix + " ", endereco)
+        altKeyAndScore = fuzzy.extractOne(enderecoAlt, self.street.keys())
+        if altKeyAndScore[1] > chosenKeyAndScore[1]:
+            return altKeyAndScore
+        else:
+            return chosenKeyAndScore
 
 
     def processNumero(self, tag):
