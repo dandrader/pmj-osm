@@ -3,30 +3,30 @@
 import sys, getopt
 import xml.etree.ElementTree as etree
 from shapely.geometry import Polygon
+from rtree import index
 
 class Node:
-    id = ''
+    id = 0
     lat = ''
     lon = ''
 
     def __init__(self, elem):
-        self.id = elem.attrib['id']
+        self.id = int(elem.attrib['id'])
         self.lat = elem.attrib['lat']
         self.lon = elem.attrib['lon']
 
     def __str__(self):
-        return "Node(lat=" + self.lat + " lon=" + self.lon + ")"
-        return "<node id='"+self.id+"' visible='true' lat='"+self.lat+"' lon='"+self.lon+"' />"
+        return "<node id='"+str(self.id)+"' visible='true' lat='"+self.lat+"' lon='"+self.lon+"' />"
 
     def __repr__(self):
         return "Node(lat=" + self.lat + " lon=" + self.lon + ")"
 
 class Way:
-    id = ''
+    id = 0
     nodes = []
 
     def __init__(self, wayElem):
-        self.id = wayElem.attrib['id']
+        self.id = int(wayElem.attrib['id'])
         for elem in wayElem:
             if elem.tag == 'nd':
                 self.nodes.append(elem.attrib['ref'])
@@ -39,6 +39,7 @@ class NumeraPredios:
     nodesEdf = {}
     waysEdf = []
     polygonsEdf = []
+    idxEdf = index.Index()
 
     def run(self, argv):
         lotesFile = ''
@@ -59,10 +60,10 @@ class NumeraPredios:
                 edificacoesFile = arg
 
         self.processaEdificacoes(etree.parse(edificacoesFile).getroot())
-        self.buildPolygons()
+        self.buildPolygonsEdf()
 
         for poly in self.polygonsEdf:
-            print(str(poly))
+            self.idxEdf.insert(poly.id, poly.bounds)
 
     def processaEdificacoes(self, root):
         for elem in root:
@@ -71,14 +72,17 @@ class NumeraPredios:
             if elem.tag == 'way':
                 self.waysEdf.append(Way(elem))
 
-    def buildPolygons(self):
+    def buildPolygonsEdf(self):
         for wayEdf in self.waysEdf:
             ext = []
             for nodeId in wayEdf.nodes:
                 node = self.nodesEdf[nodeId]
                 ext.append((float(node.lat),float(node.lon)))
 
-            self.polygonsEdf.append(Polygon(ext))
+            poly = Polygon(ext)
+            poly.id = wayEdf.id
+
+            self.polygonsEdf.append(poly)
 
 if __name__ == "__main__":
     numeraPredios = NumeraPredios()
