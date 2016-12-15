@@ -6,10 +6,6 @@ from shapely.geometry import Polygon
 from rtree import index
 
 class Node:
-    id = 0
-    lat = ''
-    lon = ''
-
     def __init__(self, elem):
         self.id = int(elem.attrib['id'])
         self.lat = elem.attrib['lat']
@@ -22,24 +18,31 @@ class Node:
         return "Node(lat=" + self.lat + " lon=" + self.lon + ")"
 
 class Way:
-    id = 0
-    nodes = []
 
     def __init__(self, wayElem):
+        self.nodes = []
+        self.tags = []
         self.id = int(wayElem.attrib['id'])
         for elem in wayElem:
             if elem.tag == 'nd':
                 self.nodes.append(elem.attrib['ref'])
+            elif elem.tag == 'tag':
+                self.tags.append(elem)
 
     def __repr__(self):
         return "Way(nodes=" + str(self.nodes) + ")"
 
 
 class NumeraPredios:
-    nodesEdf = {}
-    waysEdf = []
-    polygonsEdf = []
-    idxEdf = index.Index()
+    def __init__(self):
+        self.nodesEdf = {}
+        self.waysEdf = {}
+        self.polygonsEdf = []
+        self.idxEdf = index.Index()
+
+        self.nodesLotes = {}
+        self.waysLotes = {}
+        self.polygonsLotes = []
 
     def run(self, argv):
         lotesFile = ''
@@ -60,29 +63,41 @@ class NumeraPredios:
                 edificacoesFile = arg
 
         self.processaEdificacoes(etree.parse(edificacoesFile).getroot())
-        self.buildPolygonsEdf()
+        self.buildPolygons(self.nodesEdf, self.waysEdf, self.polygonsEdf)
 
         for poly in self.polygonsEdf:
             self.idxEdf.insert(poly.id, poly.bounds)
 
+        self.processaLotes(etree.parse(lotesFile).getroot())
+        self.buildPolygons(self.nodesLotes, self.waysLotes, self.polygonsLotes)
+
+
     def processaEdificacoes(self, root):
         for elem in root:
             if elem.tag == 'node':
-                self.nodesEdf[elem.attrib['id']] = Node(elem)
+                self.nodesEdf[int(elem.attrib['id'])] = Node(elem)
             if elem.tag == 'way':
-                self.waysEdf.append(Way(elem))
+                self.waysEdf[int(elem.attrib['id'])] = Way(elem)
 
-    def buildPolygonsEdf(self):
-        for wayEdf in self.waysEdf:
+    def buildPolygons(self, nodesDict, waysDict, polyList):
+        waysList = list(waysDict.values())
+        for way in waysList:
             ext = []
-            for nodeId in wayEdf.nodes:
-                node = self.nodesEdf[nodeId]
+            for nodeId in way.nodes:
+                node = nodesDict[int(nodeId)]
                 ext.append((float(node.lat),float(node.lon)))
 
             poly = Polygon(ext)
-            poly.id = wayEdf.id
+            poly.id = way.id
 
-            self.polygonsEdf.append(poly)
+            polyList.append(poly)
+
+    def processaLotes(self, root):
+        for elem in root:
+            if elem.tag == 'node':
+                self.nodesLotes[int(elem.attrib['id'])] = Node(elem)
+            if elem.tag == 'way':
+                self.waysLotes[int(elem.attrib['id'])] = Way(elem)
 
 if __name__ == "__main__":
     numeraPredios = NumeraPredios()
