@@ -16,6 +16,7 @@ class PMJConverter:
     suburb = ''
     street = ''
     mismatchCount = 0
+    knownMatches = {}
 
     def main(self, argv):
         inputfile = ''
@@ -83,19 +84,23 @@ class PMJConverter:
     def processEndereco(self, tag):
         tag.attrib['k'] = 'addr:street'
 
-        endereco = simplifyAddress(tag.attrib['v'])
+        if tag.attrib['v'] in self.knownMatches:
+            tag.attrib['v'] = self.knownMatches[tag.attrib['v']]
+        else:
+            endereco = simplifyAddress(tag.attrib['v'])
 
-        chosenKeyAndScore = fuzzy.extractOne(endereco, self.street.keys())
+            chosenKeyAndScore = fuzzy.extractOne(endereco, self.street.keys())
 
-        if (chosenKeyAndScore[1] < 90):
-            chosenKeyAndScore = self.tryOtherAddressPrefixes(endereco, chosenKeyAndScore)
+            if (chosenKeyAndScore[1] < 90):
+                chosenKeyAndScore = self.tryOtherAddressPrefixes(endereco, chosenKeyAndScore)
 
-        osmStreet = self.street[chosenKeyAndScore[0]]
+            osmStreet = self.street[chosenKeyAndScore[0]]
 
-        if (chosenKeyAndScore[1] < 100):
-            print(endereco + ' -> ' + osmStreet + ' (' + str(chosenKeyAndScore[1]) + ')')
+            if (chosenKeyAndScore[1] < 100):
+                print(endereco + ' -> ' + osmStreet + ' (' + str(chosenKeyAndScore[1]) + ')')
 
-        tag.attrib['v'] = osmStreet
+            self.knownMatches[tag.attrib['v']] = osmStreet
+            tag.attrib['v'] = osmStreet
 
     # Tenta com outros prefixos (eg: na PMJ pode estar "RUA FOO" e no OSM "SERVIDAO FOO")
     def tryOtherAddressPrefixes(self, endereco, chosenKeyAndScore):
