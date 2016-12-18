@@ -99,6 +99,9 @@ class PMJConverter:
             if (chosenKeyAndScore[1] < 100):
                 print(endereco + ' -> ' + osmStreet + ' (' + str(chosenKeyAndScore[1]) + ')')
 
+            if (chosenKeyAndScore[1] < 90):
+                self.mismatchCount += 1
+
             self.knownMatches[tag.attrib['v']] = osmStreet
             tag.attrib['v'] = osmStreet
 
