@@ -15,7 +15,6 @@ import xml.etree.ElementTree as etree
 class PMJConverter:
     suburb = ''
     street = ''
-    mismatchCount = 0
     knownMatches = {}
 
     def main(self, argv):
@@ -45,10 +44,7 @@ class PMJConverter:
             if elem.tag == 'way':
                 self.processWay(elem)
 
-        print('Mismatch count: ' + str(self.mismatchCount))
-
-        if self.mismatchCount == 0:
-            tree.write(outputfile,encoding="UTF-8",xml_declaration=True)
+        tree.write(outputfile,encoding="UTF-8",xml_declaration=True)
 
 
     def processWay(self, way):
@@ -98,9 +94,6 @@ class PMJConverter:
 
             if (chosenKeyAndScore[1] < 100):
                 print(endereco + ' -> ' + osmStreet + ' (' + str(chosenKeyAndScore[1]) + ')')
-
-            if (chosenKeyAndScore[1] < 90):
-                self.mismatchCount += 1
 
             self.knownMatches[tag.attrib['v']] = osmStreet
             tag.attrib['v'] = osmStreet
