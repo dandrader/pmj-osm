@@ -104,6 +104,7 @@ class PMJConverter:
             chosenKeyAndScore = self.tryOtherAddressPrefixes_helper(endereco, chosenKeyAndScore, "AVENIDA")
             chosenKeyAndScore = self.tryOtherAddressPrefixes_helper(endereco, chosenKeyAndScore, "SERVIDAO")
             chosenKeyAndScore = self.tryOtherAddressPrefixes_helper(endereco, chosenKeyAndScore, "ALAMEDA")
+            chosenKeyAndScore = self.tryOtherAddressPrefixes_helper(endereco, chosenKeyAndScore, "TRAVESSA")
             return chosenKeyAndScore
 
     def tryOtherAddressPrefixes_helper(self, endereco, chosenKeyAndScore, prefix):

@@ -16,6 +16,7 @@ def removeIrrelevantWords(address):
     address = address.replace('RUA SERVIDAO','SERVIDAO')
     address = address.replace('RUA ALAMEDA','ALAMEDA')
     address = address.replace('RUA AVENIDA','AVENIDA')
+    address = address.replace('RUA TRAVESSA','TRAVESSA')
     address = address.replace('RUA MARQUES DE OLINDA', 'AVENIDA MARQUES DE OLINDA')
 
     return address
