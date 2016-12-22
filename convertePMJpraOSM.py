@@ -12,10 +12,20 @@ from pmj_osm_utils import *
 
 import xml.etree.ElementTree as etree
 
+class WayData:
+    def __init__(self):
+        self.street = ''
+        self.number = 0
+
 class PMJConverter:
-    suburb = ''
-    street = ''
-    knownMatches = {}
+
+    def __init__(self):
+        self.suburb = ''
+        self.street = ''
+        self.knownMatches = {}
+
+        # usado somente para checar enderecos duplicados
+        self.addrTree = {}
 
     def main(self, argv):
         inputfile = ''
@@ -44,28 +54,35 @@ class PMJConverter:
             if elem.tag == 'way':
                 self.processWay(elem)
 
-        tree.write(outputfile,encoding="UTF-8",xml_declaration=True)
+
+        if self.isFreeFromDuplicateAddresses():
+            tree.write(outputfile,encoding="UTF-8",xml_declaration=True)
 
 
     def processWay(self, way):
         elemsToRemove = []
+        wayData = WayData()
+
         for elem in way:
             if elem.tag == 'tag':
-                if not self.processWayTag(elem):
+                if not self.processWayTag(elem, wayData):
                     elemsToRemove.append(elem)
 
         for elem in elemsToRemove:
             way.remove(elem)
 
-    def processWayTag(self, tag):
+        self.addWaytoAddrTree(wayData)
+
+
+    def processWayTag(self, tag, wayData):
         if tag.attrib['k'] == 'bairro':
             self.processBairro(tag)
             return True
         elif tag.attrib['k'] == 'endereco':
-            self.processEndereco(tag)
+            self.processEndereco(tag, wayData)
             return True
         elif tag.attrib['k'] == 'numero':
-            self.processNumero(tag)
+            self.processNumero(tag, wayData)
             return True
         else:
             return False
@@ -77,7 +94,9 @@ class PMJConverter:
         else:
             print("Nao achou bairro: " + tag.attrib['v'])
 
-    def processEndereco(self, tag):
+    def processEndereco(self, tag, wayData):
+        wayData.street = tag.attrib['v']
+
         tag.attrib['k'] = 'addr:street'
 
         if tag.attrib['v'] in self.knownMatches:
@@ -116,8 +135,39 @@ class PMJConverter:
             return chosenKeyAndScore
 
 
-    def processNumero(self, tag):
+    def processNumero(self, tag, wayData):
         tag.attrib['k'] = 'addr:housenumber'
+        wayData.number = int(tag.attrib['v'])
+
+
+    def addWaytoAddrTree(self, wayData):
+        if wayData.street not in self.addrTree:
+            self.addrTree[wayData.street] = {}
+
+        numbers = self.addrTree[wayData.street]
+        if wayData.number not in numbers:
+            numbers[wayData.number] = 1
+        else:
+            numbers[wayData.number] += 1
+
+    def isFreeFromDuplicateAddresses(self):
+        print("\nEnderecos repetidos:")
+        foundDuplicate = False
+        for item in self.addrTree.items():
+            street = item[0]
+            houseNumbers = item[1]
+            for subItem in houseNumbers.items():
+                houseNumber = subItem[0]
+                count = subItem[1]
+                if count > 1 and street != "":
+                    foundDuplicate = True
+                    print("\"endereco\"=\"" + street + "\" \"numero\"=\"" + str(houseNumber) + "\"")
+
+        if not foundDuplicate:
+            print("Nenhum")
+
+        return not foundDuplicate
+
 
 if __name__ == "__main__":
     pmjConverter = PMJConverter()
