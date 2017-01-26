@@ -41,7 +41,7 @@ class CentroidAddr:
 
         for tag in way.tags:
             if tag.attrib['k'] == 'addr:housenumber' or tag.attrib['k'] == 'addr:street' or tag.attrib['k'] == 'addr:suburb':
-                self.outputFile.write("    <tag k='"+tag.attrib['k']+"' v='"+tag.attrib['v']+"' />\n")
+                self.outputFile.write("    <tag k='"+tag.attrib['k']+"' v=\""+tag.attrib['v']+"\" />\n")
 
         self.outputFile.write("  </node>\n")
 
